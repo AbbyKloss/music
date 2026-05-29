@@ -187,22 +187,30 @@ def convert_albums_to_alac(input_dirs: list[os.PathLike], output_dir: os.PathLik
     """
     i'm not going as hard on this one. sanitizes input and does a loop to run `convert_album_to_alac` on all albums input
     """
-    # input_dirs = input_dirs[:1]
 
     # try to figure out how to not do this first pass, this sucks
     glob_dirs = []
+    rm_dirs = []
+
+    # get the directories that need to be globbed
     for input_dir in input_dirs:
         if "*" not in input_dir:
             continue
         new_dirs = glob(input_dir)
         glob_dirs.extend(new_dirs)
-        input_dirs.remove(input_dir)
-    input_dirs.extend(glob_dirs)
+        rm_dirs.append(input_dir)
 
+    # remove the directories that were globbed
+    for rm_dir in rm_dirs:
+        input_dirs.remove(rm_dir)
+
+    # extend the input_dirs list with the new album dirs
+    input_dirs.extend(glob_dirs)
     input_dirs.sort()
 
     for input_dir in tqdm(input_dirs, total=len(input_dirs), position=0):
         album_dir = os.path.normpath(input_dir)
+        print(album_dir)
         convert_album_to_alac(album_dir, os.path.normpath(output_dir))
 
 
