@@ -3,6 +3,7 @@ import os
 from glob import glob
 from subprocess import Popen, run
 from sys import argv
+from shutil import copy2
 
 import yaml
 from tqdm import tqdm
@@ -106,11 +107,12 @@ def convert_opus_to_alac(input_file: os.PathLike, output_dir: os.PathLike):
         f"{input_file}",
         "-y",
         "-v",
-        "info",
+        "0",
         "-map_metadata",
         "0:s:a:0",
         "-c:a",
-        f'"{output_file}"',
+        "alac",
+        f'{output_file}',
     ]
 
     res = Popen(command)
@@ -118,10 +120,10 @@ def convert_opus_to_alac(input_file: os.PathLike, output_dir: os.PathLike):
 
     return output_file
 
-
 song_file_extensions = {
     ".flac": convert_flac_to_alac,
     ".opus": convert_opus_to_alac,
+    ".m4a": copy2,
     # add more as they are found
 }
 
@@ -178,7 +180,6 @@ def convert_album_to_alac(
             songs, total=len(songs), position=1, leave=False, desc=album_name
         )
     ]
-    # print(json.dumps(out_songs, indent=2))
 
     return output_dir
 
@@ -196,7 +197,7 @@ def convert_albums_to_alac(input_dirs: list[os.PathLike], output_dir: os.PathLik
     for input_dir in input_dirs:
         if "*" not in input_dir:
             continue
-        new_dirs = [x for x in glob(input_dir) if os.path.isdir(x)]
+        new_dirs = [x for x in glob(input_dir) if os.path.isdir(os.path.join(input_dir, x))]
         glob_dirs.extend(new_dirs)
         rm_dirs.append(input_dir)
 
@@ -210,7 +211,6 @@ def convert_albums_to_alac(input_dirs: list[os.PathLike], output_dir: os.PathLik
 
     for input_dir in tqdm(input_dirs, total=len(input_dirs), position=0):
         album_dir = os.path.normpath(input_dir)
-        print(album_dir)
         convert_album_to_alac(album_dir, os.path.normpath(output_dir))
 
 
