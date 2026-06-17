@@ -1,25 +1,11 @@
-import json
 import os
 from glob import glob
-from subprocess import Popen, run
-from sys import argv
 from shutil import copy2
+from subprocess import Popen
+from sys import argv
 
 import yaml
 from tqdm import tqdm
-
-# old bash ver. :
-# #! /bin/bash
-
-# OUTPUT_DIR="m4a_tests"
-
-# mkdir ${OUTPUT_DIR};
-# for i in *.flac; do
-#         echo $i;
-#         ffmpeg -i "$i" -y -v 0 -vcodec copy -ar 48000 -sample_fmt s16 "${OUTPUT_DIR}/${i%.flac}".flac;
-#         ffmpeg -i "${OUTPUT_DIR}/$i" -y -v 0 -vcodec copy -acodec alac "${OUTPUT_DIR}/${i%.flac}".m4a;
-#         rm "${OUTPUT_DIR}/$i";
-# done
 
 
 def convert_flac_to_alac(
@@ -64,7 +50,9 @@ def convert_flac_to_alac(
     return output_file
 
 
-def convert_opus_to_alac(input_file: os.PathLike, output_dir: os.PathLike):
+def convert_opus_to_alac(
+    input_file: os.PathLike, output_dir: os.PathLike
+) -> os.PathLike:
     """
     Function that converts a song from a .opus format to ALAC. probably not good.
 
@@ -112,13 +100,14 @@ def convert_opus_to_alac(input_file: os.PathLike, output_dir: os.PathLike):
         "0:s:a:0",
         "-c:a",
         "alac",
-        f'{output_file}',
+        f"{output_file}",
     ]
 
     res = Popen(command)
     res.wait()
 
     return output_file
+
 
 song_file_extensions = {
     ".flac": convert_flac_to_alac,
@@ -184,7 +173,9 @@ def convert_album_to_alac(
     return output_dir
 
 
-def convert_albums_to_alac(input_dirs: list[os.PathLike], output_dir: os.PathLike):
+def convert_albums_to_alac(
+    input_dirs: list[os.PathLike], output_dir: os.PathLike
+) -> None:
     """
     i'm not going as hard on this one. sanitizes input and does a loop to run `convert_album_to_alac` on all albums input
     """
@@ -197,7 +188,9 @@ def convert_albums_to_alac(input_dirs: list[os.PathLike], output_dir: os.PathLik
     for input_dir in input_dirs:
         if "*" not in input_dir:
             continue
-        new_dirs = [x for x in glob(input_dir) if os.path.isdir(os.path.join(input_dir, x))]
+        new_dirs = [
+            x for x in glob(input_dir) if os.path.isdir(os.path.join(input_dir, x))
+        ]
         glob_dirs.extend(new_dirs)
         rm_dirs.append(input_dir)
 
