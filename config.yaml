@@ -1,3 +1,5 @@
-output_dir: C:\Users\kloss\Music\iTunes\iTunes Media\Automatically Add to iTunes
+output_dir: /path/to/output/dir
 input_dirs:
-    - C:\Users\kloss\Music\artists\The Dear Hunter\*
+    - /path/to/input/dir/1
+    - /path/to/input/dir/2
+    - /globbed/dir/*
