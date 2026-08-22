@@ -1,0 +1,6 @@
+src: C:\Users\[username]\Music\
+dst: E:\music
+allowed_filetypes:
+    - flac
+    - m4a
+    - mp3
