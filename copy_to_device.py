@@ -1,18 +1,20 @@
-from shutil import copy2
-from pathlib import Path
-import yaml
-from sys import argv
-import os
-from tqdm import tqdm
 import logging
+import os
+from pathlib import Path
+from shutil import copy2
+from sys import argv
+
+import yaml
+from tqdm import tqdm
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 logger = logging.getLogger(__file__)
+
 
 def main(src: os.PathLike, dst: os.PathLike, allowed_filetypes: list[str]):
     src_path = Path(src)
@@ -21,18 +23,28 @@ def main(src: os.PathLike, dst: os.PathLike, allowed_filetypes: list[str]):
 
     logger.info("Getting all files...")
     for filetype in allowed_filetypes:
-        print(filetype)
         pattern = f"*.{filetype}"
-        files.extend([(x, dst_path / x.relative_to(src_path)) for x in src_path.rglob(pattern)])
+        files.extend(
+            [
+                (x, dst_path / x.relative_to(src_path))
+                for x in src_path.rglob(pattern)
+                if not (dst_path / x.relative_to(src_path)).exists()
+            ]
+        )
 
     files.sort()
 
     logger.info(f"Got [{len(files)}] file(s). Beginning copy process...")
     for s, d in tqdm(files, total=len(files)):
         logger.debug(d)
-        if d.exists(): continue
+        if d.exists():
+            continue
         d.parent.mkdir(parents=True, exist_ok=True)
-        copy2(s, d)
+        try:
+            copy2(s, d)
+        except OSError as e:
+            logger.error(f"Failed at '{d}'")
+            raise e
 
 
 if __name__ == "__main__":
