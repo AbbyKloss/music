@@ -1,0 +1,7 @@
+src: path/to/src/dir
+dst: path/to/dst/dir
+allowed_filetypes:
+    - flac
+    - m4a
+    - mp3
+    - lrc

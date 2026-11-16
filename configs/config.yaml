@@ -1,0 +1,5 @@
+output_dir: /path/to/output/dir
+input_dirs:
+    - /path/to/input/dir/1
+    - /path/to/input/dir/2
+    - /globbed/dir/*
