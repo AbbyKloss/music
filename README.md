@@ -1,18 +1,51 @@
-i'm not doing a lot of this.
+# music
+my scripts i use to keep my music straight on my DAPs
 
-# Usage
+## [copy_to_itunes.py](./copy_to_itunes.py)
+Copies all song files from a `src` directory to a `dst` directory, with a `chk` directory, which it uses to see if the files already existed based on track artist and track title.
+
+## Usage
+```shell
+python copy_to_itunes.py [config.py]
+```
+
+filetypes:
+- `flac`
+- `ogg`
+- `m4a`
+
+Note: An example config file is located at [itunes_example_config.yaml](./itunes_example_config.yaml)
+
+## [convert_to_alac.py](./convert_to_alac.py)
+Converts a song from all considered filetypes to `.m4a`.
+
+## Usage
 ```shell
 python convert_to_alac.py [config.py]
 ```
 
-# Sample `config.yaml`
-```yaml
-output_dir: /path/to/output/dir
-input_dirs:
-    - /path/to/dir/with/flac/files/
+filetypes:
+- `flac`
+- `ogg`
+- `m4a`
+
+Note: An example config file is located at [config.yaml](./config.yaml)
+
+## [copy_to_device.py](./copy_to_device.py)
+Copies all files from the given filetype to another path, checking first to see if the exact path relative to the `dst` path already exists.
+
+## Usage
+```shell
+python copy_to_device.py [config.py]
 ```
 
-# Install
+filetypes:
+- dealer's choice
+
+Note: An example config file is located at [copy_config.yaml](./copy_config.yaml)
+
+
+## Install
 requires conda. 
 ```shell
 conda env create -f env.yaml

@@ -189,7 +189,9 @@ def convert_albums_to_alac(
         if "*" not in input_dir:
             continue
         new_dirs = [
-            x for x in glob(input_dir) if os.path.isdir(os.path.join(input_dir, x))
+            x
+            for x in glob(input_dir, recursive=True)
+            if os.path.isdir(os.path.join(input_dir, x))
         ]
         glob_dirs.extend(new_dirs)
         rm_dirs.append(input_dir)

@@ -1,0 +1,7 @@
+src: path/to/music/dir
+chk: path/to/iTunes/iTunes Media/Music
+dst: path/to/iTunes/iTunes Media/Automatically Add to iTunes
+allowed_filetypes:
+    - flac
+    - m4a
+    - mp3
