@@ -1,5 +1,6 @@
 import os
 from glob import glob
+from pathlib import Path
 from shutil import copy2
 from subprocess import Popen
 from sys import argv
@@ -8,33 +9,31 @@ import yaml
 from tqdm import tqdm
 
 
-def convert_flac_to_alac(
-    input_file: os.PathLike, output_dir: os.PathLike
-) -> os.PathLike:
+def convert_flac_to_alac(input_file: Path, output_dir: Path) -> Path:
     """
     Function that converts a song from a .flac format to ALAC
 
     Parameters
     ----------
-    input_file : os.PathLike
+    input_file : Path
         Path to desired track
-    output_dir : os.PathLike
+    output_dir : Path
         Path to put the new ALAC file
 
     Returns
     -------
-    os.PathLike
+    Path
         The new file's location
     """
-    basename = os.path.splitext(os.path.basename(input_file))[0]
-    output_file = os.path.join(output_dir, f"{basename}.m4a")
+    basename = input_file.stem
+    output_file = (output_dir / basename).with_suffix(".m4a")
     if os.path.exists(output_file):
         return output_file
 
     command = [
         "ffmpeg",
         "-i",
-        f"{input_file}",
+        f"{str(input_file)}",
         "-y",
         "-v",
         "0",
@@ -42,7 +41,7 @@ def convert_flac_to_alac(
         "copy",
         "-acodec",
         "alac",
-        f"{output_file}",
+        f"{str(output_file)}",
     ]
     res = Popen(command)
     res.wait()
@@ -50,22 +49,20 @@ def convert_flac_to_alac(
     return output_file
 
 
-def convert_opus_to_alac(
-    input_file: os.PathLike, output_dir: os.PathLike
-) -> os.PathLike:
+def convert_opus_to_alac(input_file: Path, output_dir: Path) -> Path:
     """
     Function that converts a song from a .opus format to ALAC. probably not good.
 
     Parameters
     ----------
-    input_file : os.PathLike
+    input_file : Path
         Path to desired track
-    output_dir : os.PathLike
+    output_dir : Path
         Path to put the new ALAC file
 
     Returns
     -------
-    os.PathLike
+    Path
         The new file's location
     """
     """
@@ -73,19 +70,18 @@ def convert_opus_to_alac(
 
     Parameters
     ----------
-    input_file : os.PathLike
+    input_file : Path
         Path to desired track
-    output_dir : os.PathLike
+    output_dir : Path
         Path to put the new ALAC file
 
     Returns
     -------
-    os.PathLike
+    Path
         The new file's location
     """
-    basename, _ = os.path.splitext(os.path.basename(input_file))
-    output_file = os.path.join(output_dir, f"{basename}.m4a")
-
+    basename = input_file.stem
+    output_file = (output_dir / basename).with_suffix(".m4a")
     if os.path.exists(output_file):
         return output_file
 
@@ -117,50 +113,47 @@ song_file_extensions = {
 }
 
 
-def convert_song_to_alac(
-    input_file: os.PathLike, output_dir: os.PathLike
-) -> os.PathLike:
+def convert_song_to_alac(input_file: Path, output_dir: Path) -> Path:
     """
     Function that converts a song from its current file format to ALAC
 
     Parameters
     ----------
-    input_file : os.PathLike
+    input_file : Path
         Path to desired track
-    output_dir : os.PathLike
+    output_dir : Path
         Path to put the new ALAC file
 
     Returns
     -------
-    os.PathLike
+    Path
         The new file's location
     """
-    filetype = os.path.splitext(input_file)[1]
+    filetype = input_file.suffix
 
-    return song_file_extensions[filetype](input_file, output_dir)
+    out_file: Path = song_file_extensions[filetype](input_file, output_dir)
+    return out_file
 
 
-def convert_album_to_alac(
-    album_dir: os.PathLike, output_dir: os.PathLike
-) -> os.PathLike:
+def convert_album_to_alac(album_dir: Path, output_dir: Path) -> Path:
     """Function that runs `convert_song_to_alac` on a whole directory of songs
 
     Parameters
     ----------
-    album_dir : os.PathLike
+    album_dir : Path
         Directory of songs to convert to ALAC
-    output_dir : os.PathLike
+    output_dir : Path
         Directory to place new files
 
     Returns
     -------
-    os.PathLike
+    Path
         `output_dir`
     """
     songs = [
-        os.path.join(album_dir, x)
-        for x in os.listdir(album_dir)
-        if os.path.splitext(x)[-1] in song_file_extensions.keys()
+        album_dir / x
+        for x in album_dir.iterdir()
+        if x.suffix in song_file_extensions.keys()
     ]
     album_name = os.path.basename(album_dir)
     out_songs = [
@@ -173,12 +166,12 @@ def convert_album_to_alac(
     return output_dir
 
 
-def convert_albums_to_alac(
-    input_dirs: list[os.PathLike], output_dir: os.PathLike
-) -> None:
+def convert_albums_to_alac(input_dirs: list[Path], output_dir: Path) -> None:
     """
     i'm not going as hard on this one. sanitizes input and does a loop to run `convert_album_to_alac` on all albums input
     """
+    input_dirs: list[Path] = [Path(x) for x in input_dirs]
+    output_dir: Path = Path(output_dir)
 
     # try to figure out how to not do this first pass, this sucks
     glob_dirs = []
@@ -186,12 +179,10 @@ def convert_albums_to_alac(
 
     # get the directories that need to be globbed
     for input_dir in input_dirs:
-        if "*" not in input_dir:
+        if "*" not in str(input_dir):
             continue
         new_dirs = [
-            x
-            for x in glob(input_dir, recursive=True)
-            if os.path.isdir(os.path.join(input_dir, x))
+            x for x in glob(str(input_dir), recursive=True) if (input_dir / x).is_dir()
         ]
         glob_dirs.extend(new_dirs)
         rm_dirs.append(input_dir)
@@ -205,8 +196,7 @@ def convert_albums_to_alac(
     input_dirs.sort()
 
     for input_dir in tqdm(input_dirs, total=len(input_dirs), position=0):
-        album_dir = os.path.normpath(input_dir)
-        convert_album_to_alac(album_dir, os.path.normpath(output_dir))
+        convert_album_to_alac(input_dir, output_dir)
 
 
 if __name__ == "__main__":

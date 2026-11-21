@@ -33,9 +33,13 @@ def main(
     dst_path = Path(dst)
     files: list[tuple[Path, Path]] = []
 
+    skip_suffixes = [".m4a", ".mp3"]
+
     logger.info("Getting all files...")
     itunes_titles = [
-        get_track_artist_title_from_path(x) for x in chk_path.rglob("*.m4a")
+        get_track_artist_title_from_path(x)
+        for x in chk_path.rglob("*")
+        if x.suffix in skip_suffixes
     ]
 
     for filetype in allowed_filetypes:
@@ -45,7 +49,7 @@ def main(
             [
                 [
                     x,
-                    dst_path / x.relative_to(src_path),
+                    (dst_path / x.relative_to(src_path)),
                 ]
                 for x in src_path.rglob(pattern)
                 if get_track_artist_title_from_path(x) not in itunes_titles
@@ -54,12 +58,11 @@ def main(
 
     files.sort()
 
-    logger.info(f"Got [{len(files)}] file(s). Beginning copy process...")
     for s, d in tqdm(files, total=len(files)):
         d.parent.mkdir(parents=True, exist_ok=True)
         try:
-            if s.suffix in song_file_extensions.items():
-                convert_song_to_alac(s, d)
+            if s.suffix in song_file_extensions.keys():
+                convert_song_to_alac(s, d.parent)
             else:
                 copy2(s, d)
         except OSError as e:
