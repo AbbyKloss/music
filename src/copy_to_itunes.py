@@ -20,9 +20,9 @@ logging.basicConfig(
 logger = logging.getLogger(__file__)
 
 
-def get_track_artist_title_from_path(track_path: Path) -> str:
+def get_track_album_artist_title_from_path(track_path: Path) -> str:
     tags = TinyTag.get(track_path)
-    return f"{tags.artist}_{tags.title}"
+    return f"{tags.artist}_{tags.album}_{tags.title}".lower()
 
 
 def main(
@@ -37,7 +37,7 @@ def main(
 
     logger.info("Getting all files...")
     itunes_titles = [
-        get_track_artist_title_from_path(x)
+        get_track_album_artist_title_from_path(x)
         for x in chk_path.rglob("*")
         if x.suffix in skip_suffixes
     ]
@@ -52,7 +52,7 @@ def main(
                     (dst_path / x.relative_to(src_path)),
                 ]
                 for x in src_path.rglob(pattern)
-                if get_track_artist_title_from_path(x) not in itunes_titles
+                if get_track_album_artist_title_from_path(x) not in itunes_titles
             ]
         )
 
